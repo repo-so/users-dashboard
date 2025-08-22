@@ -1,10 +1,11 @@
-
+import InteractiveLineChart from "./components/graph"
 function App() {
 
   return (
     <>
-      <div className="bg-red-500">helo
-      </div>
+    <div className="h-screen flex justify-center items-center">
+      <InteractiveLineChart/>
+    </div>
     </>
   )
 }
