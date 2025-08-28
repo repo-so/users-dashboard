@@ -2,6 +2,8 @@ import express, { Router } from 'express';
 import { db } from '../data';
 import { body, param, validationResult } from "express-validator";
 
+import User from '../models/userModel';
+
 const router = Router();
 
 const validate = (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -15,8 +17,13 @@ const validate = (req: express.Request, res: express.Response, next: express.Nex
 };
 
 // GET ALL USERS
-router.get('/', (req, res) => {
-  res.json(db.users);
+router.get('/', async (_req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 // GET USER BASED ON ID (url)
@@ -31,52 +38,54 @@ router.post("/",
   [
     //if name not empty
     body("name").notEmpty().withMessage("Name is required"),
-    //if its actually a mail structure
+    //if its actually an email structure
     body("email").isEmail().withMessage("Invalid email format"), 
   ],
   validate, //validate helper function above
   
-    (req: express.Request, res: express.Response) => {
-  const newUser = { id: Date.now(), ...req.body };
-    db.users.push(newUser);
-  res.status(201).json(newUser);
+    async (req: express.Request, res: express.Response) => {
+      try {
+        const newUser = new User(req.body);
+        await newUser.save(); // adds newuser in db
+        res.status(201).json(newUser);
+      } catch (err) {
+        res.status(500).json({ error: "Could not create user" });
+      }
 });
 
 router.put("/:id",
   [
-    param("id").isInt().withMessage("ID must be a number"),
+    param("id").isMongoId().withMessage("Invalid mongodb ID"),
     body("name").optional().notEmpty().withMessage("Name cannot be empty"),
     body("email").optional().isEmail().withMessage("Invalid email format"),
   ],
   validate,
 
-  (req: express.Request, res: express.Response) => {
-  const { id } = req.params;
-  const userId = Number(id);
-
-  // Check if the user exists
-  const userExists = db.users.some(u => u.id === userId);
-  if (!userExists) return res.status(404).json({ message: "User not found" });
-
-  // Update the user when it matches the id
-  db.users = db.users.map(u =>
-    u.id === userId ? { ...u, ...req.body } : u
-  );
-
-  // find the updated user and send in response
-  const updatedUser = db.users.find(u => u.id === userId);
-  res.json(updatedUser);
+  async (req: express.Request, res: express.Response) => {
+  try {                            //Mongoose function
+      const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+        new: true, // return updated version of the user
+    });
+      if (!updatedUser) return res.status(404).json({ message: "User not found" });
+      res.json(updatedUser);
+    } catch (err) {
+      res.status(500).json({ error: "Could not update user" });
+    }
 });
 
 router.delete("/:id",
   //validation: if id:number only
-  [param("id").isInt().withMessage("ID must be a number")],
+  [param("id").isMongoId().withMessage("Invalid mongodb ID")],
   validate,
 
-  (req: express.Request, res: express.Response) => {
-  const { id } = req.params;
-  db.users = db.users.filter(u => u.id !== Number(id)); //filtra fuori il soggetto
-  res.json({ message: "User deleted" });
+  async (req: express.Request, res: express.Response) => {
+  try {
+      const deletedUser = await User.findByIdAndDelete(req.params.id);
+      if (!deletedUser) return res.status(404).json({ message: "User not found" });
+      res.json({ message: "User deleted" });
+    } catch (err) {
+      res.status(500).json({ error: "Could not delete user" });
+    }
 });
 
 export default router;

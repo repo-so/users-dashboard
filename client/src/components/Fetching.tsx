@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { User, IdCard, AtSign, SquarePen } from 'lucide-react';
 
 type User = {
-  id: number;
+  _id: string;
   name: string;
-  email?: string;
+  email: string;
 };
 
 export default function Users() {
@@ -60,7 +60,7 @@ export default function Users() {
   const updateUser = async () => {
     if (!editUser) return;
     try {
-      const res = await fetch(`http://localhost:5000/users/${editUser.id}`, {
+      const res = await fetch(`http://localhost:5000/users/${editUser._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editUser.name , email: editUser.email }),
@@ -68,7 +68,7 @@ export default function Users() {
       if (!res.ok) throw new Error("Failed to update user");
 
       const updated: User = await res.json();
-      setUsers(prev => prev.map(u => (u.id === updated.id ? updated : u)));
+      setUsers(prev => prev.map(u => (u._id === updated._id ? updated : u)));
       setEditUser(null); //close edit mode
 
     } catch (error) {
@@ -79,14 +79,14 @@ export default function Users() {
 
   // DELETE
 
-  const deleteUser = async (id: number) => {
+  const deleteUser = async (_id: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/users/${id}`, {
+      const res = await fetch(`http://localhost:5000/users/${_id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete user");
 
-      setUsers(prev => prev.filter(u => u.id !== id));
+      setUsers(prev => prev.filter(u => u._id !== _id));
     } catch (error) {
       console.error("Error deleting user:", error);
     }
@@ -128,15 +128,15 @@ export default function Users() {
   {/* List users */}
   <tbody>
     {users.map(u => (
-      <tr key={u.id} className="border-t border-gray-500">
-        {editUser?.id === u.id ? (
+      <tr key={u._id} className="border-t border-gray-500">
+        {editUser?._id === u._id ? (
           // Inline edit form
           <>
 
             <td className="py-2 px-1 border-r border-gray-500">
               <input //name input
                 className="border p-1 w-full rounded-sm"
-                value={editUser.id}
+                value={editUser._id}
                 readOnly
               />
             </td>
@@ -170,7 +170,7 @@ export default function Users() {
         ) : (
           // Displayed data (not in edit mode)
           <>
-            <td className="p-2 border-r border-gray-500 min-w-15 max-w-31 truncate">{u.id}</td>
+            <td className="p-2 border-r border-gray-500 min-w-15 max-w-31 truncate">{u._id}</td>
             <td className="p-2 border-r border-gray-500 max-w-10 truncate">{u.name}</td>
             <td className="p-2 border-r border-gray-500 max-w-40 truncate">{u.email}</td>
             <td className="p-2">
@@ -181,7 +181,7 @@ export default function Users() {
                 >Update</button>
                 <button //delete button
                   className="bg-red-500 text-white px-2 py-1 rounded"
-                  onClick={() => deleteUser(u.id)}
+                  onClick={() => deleteUser(u._id)}
                 >Delete</button>
               </div>
             </td>
