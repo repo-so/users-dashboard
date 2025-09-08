@@ -16,7 +16,7 @@ const validate = (req: express.Request, res: express.Response, next: express.Nex
 };
 
 // GET USER BASED ON name (url)
-router.get('/by-name/:name', async (req: express.Request, res: express.Response) => {   // GET /users/:name
+router.get('/by-name/:name', async (req, res) => {   // GET /users/:name
 
   const { name } = req.params;
   const searchName = String(name).toLowerCase();
@@ -29,7 +29,7 @@ router.get('/by-name/:name', async (req: express.Request, res: express.Response)
     if (matches.length === 0) {
       return res.status(404).json({ message: 'No users found' });
     }
-
+    console.log(matches)
     res.json(matches);
   } catch (err) {
     console.error(err);

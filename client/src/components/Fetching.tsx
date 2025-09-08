@@ -100,9 +100,9 @@ export default function Users() {
       try {
         const res = await fetch(`http://localhost:5000/users/by-name/${name}`);
         if (!res.ok) throw new Error("Failed to fetch user by name");
-        const users = await res.json();
-         console.log(users)
-          return users;
+        const matches = await res.json();
+         console.log(matches)
+          return matches;
          
       } catch (error) {
         console.error("Error loading users:", error);
