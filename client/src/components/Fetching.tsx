@@ -15,6 +15,7 @@ export default function Users() {
   //updateUser editing state (only for updateUser)
   const [editUser, setEditUser] = useState<User | null>(null);
 
+  const [search, setSearch] = useState("");
 
   // READ - fetch all users at first render(useEffect)
 
@@ -92,6 +93,21 @@ export default function Users() {
     }
   };
 
+  // SEARCH BY NAME
+
+  const searchUser = async (name: string) => {
+    
+      try {
+        const res = await fetch(`http://localhost:5000/users/by-name/${name}`);
+        if (!res.ok) throw new Error("Failed to fetch user by name");
+        const users = await res.json();
+         console.log(users)
+          return users;
+         
+      } catch (error) {
+        console.error("Error loading users:", error);
+      }
+    };
 
 
   return (
@@ -213,6 +229,23 @@ export default function Users() {
           className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded cursor-pointer"
           onClick={addUser}
         >Add User
+        </button>
+
+      </div>
+
+      {/*input to search user */}
+      <div className="space-x-2 border rounded-lg p-5 mb-6 ">
+        <input
+          className="border p-1 rounded"
+          placeholder="Search by Name"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+
+        <button
+          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded cursor-pointer"
+          onClick={() => searchUser(search)}
+        >Search 
         </button>
 
       </div>

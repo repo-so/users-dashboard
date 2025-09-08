@@ -1,10 +1,10 @@
-type User = {
+type DeprecatedUser = {
   id: number;
   name: string;
   email?: string;
 };
 
-export const db: { users: User[] } = {
+export const db: { users: DeprecatedUser[] } = {
     users: [
   { id: 1, name: 'Alice', email: 'email@example.com' },
   { id: 2, name: 'John', email: 'email@example.com' },

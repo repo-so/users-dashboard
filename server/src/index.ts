@@ -17,7 +17,6 @@ app.use(cors({
 
 app.use(express.json());
 
-
 const MONGO_URI = process.env.MONGO_URI as string; // local db
   if (!MONGO_URI) {
   throw new Error("MONGO_URI environment variable is not set");

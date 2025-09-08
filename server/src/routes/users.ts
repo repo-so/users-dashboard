@@ -1,5 +1,4 @@
 import express, { Router } from 'express';
-import { db } from '../data';
 import { body, param, validationResult } from "express-validator";
 
 import User from '../models/userModel';
@@ -16,6 +15,28 @@ const validate = (req: express.Request, res: express.Response, next: express.Nex
   next();
 };
 
+// GET USER BASED ON name (url)
+router.get('/by-name/:name', async (req: express.Request, res: express.Response) => {   // GET /users/:name
+
+  const { name } = req.params;
+  const searchName = String(name).toLowerCase();
+
+  try {
+    const matches = await User.find({
+      name: { $regex: searchName, $options: 'i' }, // Case-insensitive includes (alex, Alex, ALEX)
+    });
+
+    if (matches.length === 0) {
+      return res.status(404).json({ message: 'No users found' });
+    }
+
+    res.json(matches);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // GET ALL USERS
 router.get('/', async (_req, res) => {
   try {
@@ -26,13 +47,7 @@ router.get('/', async (_req, res) => {
   }
 });
 
-// GET USER BASED ON ID (url)
-router.get('/:id', (req, res) => {   // GET /users/:id
-  const { id } = req.params;
-  const user = db.users.find(u => u.id === Number(id));
-  if (!user) return res.status(404).json({ message: 'User not found' });
-  res.json(user);
-});
+
 
 router.post("/", 
   [
